@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import testUtils from "react-dom/test-utils";
 
 const average = arr =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -30,6 +31,10 @@ export default function App() {
 
   function handleDeleteWatched(id) {
     setWatched(watched => watched.filter(movie => movie.imdbID !== id));
+  }
+
+  function handleDeleteAll() {
+    setWatched([]);
   }
 
   useEffect(
@@ -112,6 +117,7 @@ export default function App() {
               <WatchedMovieList
                 watched={watched}
                 onDeleteWatched={handleDeleteWatched}
+                onDeleteAll={handleDeleteAll}
               />
             </>
           )}
@@ -378,24 +384,33 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⏳</span>
-          <span>{avgRuntime} min</span>
+          <span>{avgRuntime.toFixed(0)} min</span>
         </p>
       </div>
     </div>
   );
 }
 
-function WatchedMovieList({ watched, onDeleteWatched }) {
+function WatchedMovieList({ watched, onDeleteWatched, onDeleteAll }) {
   return (
-    <ul className="list">
-      {watched.map(movie => (
-        <WatchedMovie
-          movie={movie}
-          onDeleteWatched={onDeleteWatched}
-          key={movie.imdbID}
-        />
-      ))}
-    </ul>
+    <>
+      <ul className="list">
+        {watched.map(movie => (
+          <WatchedMovie
+            movie={movie}
+            onDeleteWatched={onDeleteWatched}
+            key={movie.imdbID}
+          />
+        ))}
+      </ul>
+      {watched.length >= 2 && (
+        <div className="rating">
+          <button className="btn-add" onClick={onDeleteAll}>
+            Clear all
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
