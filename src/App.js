@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import testUtils from "react-dom/test-utils";
 
 const average = arr =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
