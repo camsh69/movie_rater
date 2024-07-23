@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocalStorageState } from "./useLocalStorage";
+import { useKey } from "./useKey";
 
 const average = arr =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -11,10 +13,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  const [watched, setWatched] = useState(() => {
-    const storedValue = localStorage.getItem("saved");
-    return storedValue ? JSON.parse(storedValue) : [];
-  });
+  const [saved, setSaved] = useLocalStorageState([], "saved");
 
   function handleSelectMovie(id) {
     setSelectedId(selectedId => (id === selectedId ? null : id));
@@ -24,24 +23,17 @@ export default function App() {
     setSelectedId(null);
   }
 
-  function handleAddWatched(movie) {
-    setWatched(watched => [...watched, movie]);
+  function handleAddSaved(movie) {
+    setSaved(saved => [...saved, movie]);
   }
 
-  function handleDeleteWatched(id) {
-    setWatched(watched => watched.filter(movie => movie.imdbID !== id));
+  function handleDeleteSaved(id) {
+    setSaved(saved => saved.filter(movie => movie.imdbID !== id));
   }
 
   function handleDeleteAll() {
-    setWatched([]);
+    setSaved([]);
   }
-
-  useEffect(
-    function () {
-      localStorage.setItem("saved", JSON.stringify(watched));
-    },
-    [watched]
-  );
 
   useEffect(
     function () {
@@ -107,15 +99,15 @@ export default function App() {
             <MovieDetails
               selectedId={selectedId}
               onCloseMovie={handleCloseMovie}
-              onAddWatched={handleAddWatched}
-              watched={watched}
+              onAddSaved={handleAddSaved}
+              saved={saved}
             />
           ) : (
             <>
-              <WatchedSummary watched={watched} />
-              <WatchedMovieList
-                watched={watched}
-                onDeleteWatched={handleDeleteWatched}
+              <SavedSummary saved={saved} />
+              <SavedMovieList
+                saved={saved}
+                onDeleteSaved={handleDeleteSaved}
                 onDeleteAll={handleDeleteAll}
               />
             </>
@@ -157,6 +149,12 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+
+  useEffect(function () {
+    inputEl.current.focus();
+  }, []);
+
   return (
     <input
       className="search"
@@ -164,6 +162,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={e => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
@@ -222,11 +221,11 @@ function Movie({ movie, onSelectedMovie }) {
   );
 }
 
-function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
+function MovieDetails({ selectedId, onCloseMovie, onAddSaved, saved }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const isWatched = watched.map(movie => movie.imdbID).includes(selectedId);
+  const isSaved = saved.map(movie => movie.imdbID).includes(selectedId);
 
   const {
     Title: title,
@@ -242,7 +241,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   } = movie;
 
   function handleAdd() {
-    const newWatchedMovie = {
+    const newSavedMovie = {
       imdbID: selectedId,
       title,
       year,
@@ -250,7 +249,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
     };
-    onAddWatched(newWatchedMovie);
+    onAddSaved(newSavedMovie);
     onCloseMovie();
   }
 
@@ -293,20 +292,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     [title]
   );
 
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === "Escape") onCloseMovie();
-      }
-
-      document.addEventListener("keydown", callback);
-
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [onCloseMovie]
-  );
+  useKey("Escape", onCloseMovie);
 
   return (
     <div className="details">
@@ -347,7 +333,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
             <p>Starring {actors}</p>
             <p>Directed by {director}</p>
             <div className="rating">
-              {isWatched ? (
+              {isSaved ? (
                 <span style={{ textAlign: "center" }}>
                   Already added to download list 👍
                 </span>
@@ -365,9 +351,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   );
 }
 
-function WatchedSummary({ watched }) {
-  const avgImdbRating = average(watched.map(movie => movie.imdbRating));
-  const avgRuntime = average(watched.map(movie => movie.runtime));
+function SavedSummary({ saved }) {
+  const avgImdbRating = average(saved.map(movie => movie.imdbRating));
+  const avgRuntime = average(saved.map(movie => movie.runtime));
 
   return (
     <div className="summary">
@@ -375,7 +361,7 @@ function WatchedSummary({ watched }) {
       <div>
         <p>
           <span>#️⃣</span>
-          <span>{watched.length} movies</span>
+          <span>{saved.length} movies</span>
         </p>
         <p>
           <span>⭐️</span>
@@ -390,19 +376,19 @@ function WatchedSummary({ watched }) {
   );
 }
 
-function WatchedMovieList({ watched, onDeleteWatched, onDeleteAll }) {
+function SavedMovieList({ saved, onDeleteSaved, onDeleteAll }) {
   return (
     <>
       <ul className="list">
-        {watched.map(movie => (
-          <WatchedMovie
+        {saved.map(movie => (
+          <SavedMovie
             movie={movie}
-            onDeleteWatched={onDeleteWatched}
+            onDeleteSaved={onDeleteSaved}
             key={movie.imdbID}
           />
         ))}
       </ul>
-      {watched.length >= 2 && (
+      {saved.length >= 2 && (
         <div className="rating">
           <button className="btn-add" onClick={onDeleteAll}>
             Clear all
@@ -413,7 +399,7 @@ function WatchedMovieList({ watched, onDeleteWatched, onDeleteAll }) {
   );
 }
 
-function WatchedMovie({ movie, onDeleteWatched }) {
+function SavedMovie({ movie, onDeleteSaved }) {
   return (
     <li>
       <img src={movie.poster} alt={`${movie.title} poster`} />
@@ -439,7 +425,7 @@ function WatchedMovie({ movie, onDeleteWatched }) {
         </p>
         <button
           className="btn-delete"
-          onClick={() => onDeleteWatched(movie.imdbID)}
+          onClick={() => onDeleteSaved(movie.imdbID)}
         >
           X
         </button>
