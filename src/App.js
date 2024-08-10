@@ -119,12 +119,12 @@ export default function App() {
 }
 
 function Loader() {
-  return <p className="loader">Loading...</p>;
+  return <p className='loader'>Loading...</p>;
 }
 
 function ErrorMessage({ message }) {
   return (
-    <p className="error">
+    <p className='error'>
       <span>⛔️</span> {message}
     </p>
   );
@@ -132,7 +132,7 @@ function ErrorMessage({ message }) {
 
 function NavBar({ children }) {
   return (
-    <nav className="nav-bar">
+    <nav className='nav-bar'>
       <Logo />
       {children}
     </nav>
@@ -141,8 +141,8 @@ function NavBar({ children }) {
 
 function Logo() {
   return (
-    <div className="logo">
-      <span role="img">🎬</span>
+    <div className='logo'>
+      <span role='img'>🎬</span>
       <h1>John's Movie Rater</h1>
     </div>
   );
@@ -157,9 +157,9 @@ function Search({ query, setQuery }) {
 
   return (
     <input
-      className="search"
-      type="text"
-      placeholder="Search movies..."
+      className='search'
+      type='text'
+      placeholder='Search movies...'
       value={query}
       onChange={e => setQuery(e.target.value)}
       ref={inputEl}
@@ -169,22 +169,22 @@ function Search({ query, setQuery }) {
 
 function NumberResults({ movies }) {
   return (
-    <p className="num-results">
+    <p className='num-results'>
       Found <strong>{movies.length}</strong> results
     </p>
   );
 }
 
 function Main({ children }) {
-  return <main className="main">{children}</main>;
+  return <main className='main'>{children}</main>;
 }
 
 function Box({ children }) {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen(open => !open)}>
+    <div className='box'>
+      <button className='btn-toggle' onClick={() => setIsOpen(open => !open)}>
         {isOpen ? "–" : "+"}
       </button>
       {isOpen && children}
@@ -194,7 +194,7 @@ function Box({ children }) {
 
 function MovieList({ movies, onSelectedMovie }) {
   return (
-    <ul className="list list-movies">
+    <ul className='list list-movies'>
       {movies?.map(movie => (
         <Movie
           movie={movie}
@@ -295,16 +295,16 @@ function MovieDetails({ selectedId, onCloseMovie, onAddSaved, saved }) {
   useKey("Escape", onCloseMovie);
 
   return (
-    <div className="details">
+    <div className='details'>
       {isLoading && <Loader />}
       {!isLoading && !error && (
         <>
           <header>
-            <button className="btn-back" onClick={onCloseMovie}>
+            <button className='btn-back' onClick={onCloseMovie}>
               &larr;
             </button>
             <img src={poster} alt={`Poster of ${movie}`} />
-            <div className="details-overview">
+            <div className='details-overview'>
               <h2>{title}</h2>
               <p>
                 {released} &bull; {runtime}
@@ -317,10 +317,11 @@ function MovieDetails({ selectedId, onCloseMovie, onAddSaved, saved }) {
           </header>
           <section>
             <div
-              className="rating"
+              className='rating'
               style={{ textAlign: "center", fontSize: "4rem" }}
             >
               <p>
+                {imdbRating === "N/A" && `Oh Oh! 👎`}
                 {imdbRating < 5 && `It's a stinker 💩`}
                 {imdbRating >= 5 && imdbRating < 6.5 && `Likely crap ⛔️`}
                 {imdbRating >= 6.5 && imdbRating < 8 && `Likely okay 👍`}
@@ -332,13 +333,13 @@ function MovieDetails({ selectedId, onCloseMovie, onAddSaved, saved }) {
             </p>
             <p>Starring {actors}</p>
             <p>Directed by {director}</p>
-            <div className="rating">
+            <div className='rating'>
               {isSaved ? (
                 <span style={{ textAlign: "center" }}>
                   Already added to download list 👍
                 </span>
               ) : (
-                <button className="btn-add" onClick={handleAdd}>
+                <button className='btn-add' onClick={handleAdd}>
                   + Add to download list
                 </button>
               )}
@@ -356,7 +357,7 @@ function SavedSummary({ saved }) {
   const avgRuntime = average(saved.map(movie => movie.runtime));
 
   return (
-    <div className="summary">
+    <div className='summary'>
       <h2>Download List</h2>
       <div>
         <p>
@@ -379,7 +380,7 @@ function SavedSummary({ saved }) {
 function SavedMovieList({ saved, onDeleteSaved, onDeleteAll }) {
   return (
     <>
-      <ul className="list">
+      <ul className='list'>
         {saved.map(movie => (
           <SavedMovie
             movie={movie}
@@ -389,8 +390,8 @@ function SavedMovieList({ saved, onDeleteSaved, onDeleteAll }) {
         ))}
       </ul>
       {saved.length >= 2 && (
-        <div className="rating">
-          <button className="btn-add" onClick={onDeleteAll}>
+        <div className='rating'>
+          <button className='btn-add' onClick={onDeleteAll}>
             Clear all
           </button>
         </div>
@@ -424,7 +425,7 @@ function SavedMovie({ movie, onDeleteSaved }) {
           </span>
         </p>
         <button
-          className="btn-delete"
+          className='btn-delete'
           onClick={() => onDeleteSaved(movie.imdbID)}
         >
           X
